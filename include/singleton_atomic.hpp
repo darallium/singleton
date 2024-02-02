@@ -12,27 +12,27 @@ public:
     static void Construct(Args&&... args)
     {
 #ifndef SINGLETON_INJECT_ABSTRACT_CLASS
-        using Instance = Derived;
+        using Inst = Derived;
 #else
         struct Dummy final : Derived {
             using Derived::Derived;
             consteval void ProhibitConstructFromDerived() const noexcept override { }
         };
-        using Instance = Dummy;
+        using Inst = Dummy;
 #endif // SINGLETON_INJECT_ABSTRACT_CLASS
 
         if (!instance_.load(std::memory_order_acquire)) {
             std::unique_lock lock { mutex_ };
 
             if (!instance_.load(std::memory_order_relaxed)) {
-                instance_.store(new Instance { std::forward<Args>(args)... }, std::memory_order_release);
+                instance_.store(new Inst { std::forward<Args>(args)... }, std::memory_order_release);
                 lock.unlock();
                 instance_.notify_all();
             }
         }
     }
 
-    static Derived* GetInstance() noexcept
+    static Derived* Instance() noexcept
     {
         instance_.wait(nullptr, std::memory_order_acquire);
         return instance_.load(std::memory_order_relaxed);
