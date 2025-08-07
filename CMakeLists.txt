@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.23)
 
 project(
     singleton
-    VERSION 1.5.0
+    VERSION 1.6.0
     DESCRIPTION "C++11/17/20 template singleton pattern"
     HOMEPAGE_URL "https://github.com/jimmy-park/singleton"
     LANGUAGES CXX
@@ -28,6 +28,15 @@ else()
     add_library(singleton INTERFACE)
     add_library(singleton-dclp INTERFACE)
     add_library(singleton-atomic INTERFACE)
+endif()
+
+# Modify source
+if(MINGW OR CYGWIN)
+    file(READ ${CMAKE_SOURCE_DIR}/include/singleton_dclp.hpp DCLP)
+    string(REPLACE "#include <shared_mutex>\n" "" DCLP "${DCLP}")
+    string(REPLACE "std::shared_lock" "std::lock_guard" DCLP "${DCLP}")
+    string(REPLACE "std::shared_mutex" "std::mutex" DCLP "${DCLP}")
+    file(WRITE ${CMAKE_SOURCE_DIR}/include/singleton_dclp.hpp "${DCLP}")
 endif()
 
 # Create a singleton target
